@@ -17,6 +17,6 @@ export default defineConfig({
       host: 'localhost',
     },
     strictPort: false,
-    allowedHosts: ['localhost', '*.loca.lt'],
+    allowedHosts: ['localhost', 'medplum-foomedical-app.loca.lt'],
   },
 });

@@ -24,6 +24,16 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
+    fs: {
+      strict: false,
+    },
+    proxy: {},
+    cors: true,
+    hmr: {
+      host: 'localhost',
+    },
+    strictPort: false,
+    allowedHosts: ['localhost', 'medplum-main-app.loca.lt'],
   },
   publicDir: 'static',
   build: {
