@@ -13,7 +13,7 @@ import { App } from './App';
 const medplum = new MedplumClient({
   onUnauthenticated: () => (window.location.href = '/'),
   cacheTime: 5000,
-  // baseUrl: 'http://localhost:8103/', //Uncomment this to run against the server on your localhost
+  baseUrl: 'https://medplum-server.loca.lt/', // Using public server URL for localtunnel access
 });
 
 const theme = createTheme({

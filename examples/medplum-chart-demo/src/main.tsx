@@ -12,7 +12,7 @@ import { Notifications } from '@mantine/notifications';
 
 const medplum = new MedplumClient({
   onUnauthenticated: () => (window.location.href = '/'),
-  baseUrl: 'http://localhost:8103/', // Using local server
+  baseUrl: 'https://medplum-server.loca.lt/', // Using public server URL
 });
 
 const theme = createTheme({
