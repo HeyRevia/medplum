@@ -6,6 +6,17 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000,
+    host: 'localhost',
+    port: 3003,
+    fs: {
+      strict: false,
+    },
+    proxy: {},
+    cors: true,
+    hmr: {
+      host: 'localhost',
+    },
+    strictPort: false,
+    allowedHosts: ['localhost', '*.loca.lt'],
   },
 });
