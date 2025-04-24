@@ -79,9 +79,9 @@ jobs:
         #run: ./scripts/build-revia-docker.sh --release
         run: ./scripts/build-revia-docker.sh
         env:
-          SERVER_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/medplum-server
-          APP_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/medplum-app
-          FOOMEDICAL_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/medplum-foomedical
+          SERVER_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/heyrevia/medplum-server
+          APP_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/heyrevia/medplum-app
+          FOOMEDICAL_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/heyrevia/medplum-foomedical
 
       # - name: Deploy bot layer
       #   run: ./scripts/deploy-bot-layer.sh
