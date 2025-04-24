@@ -82,6 +82,8 @@ jobs:
           SERVER_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/heyrevia/medplum-server
           APP_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/heyrevia/medplum-app
           FOOMEDICAL_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/heyrevia/medplum-foomedical
+          PROVIDER_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/heyrevia/medplum-provider
+          CHART_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/heyrevia/medplum-chart
 
       # - name: Deploy bot layer
       #   run: ./scripts/deploy-bot-layer.sh

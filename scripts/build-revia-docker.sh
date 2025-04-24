@@ -50,6 +50,21 @@ tar \
   -czf ./examples/foomedical/medplum-foomedical.tar.gz \
   -C examples/foomedical/dist .
 
+# Build provider tarball
+# The -C flag rewrites the base path from packages/app/dist/ to ./
+tar \
+  --no-xattrs \
+  -czf ./examples/medplum-provider/medplum-provider.tar.gz \
+  -C examples/medplum-provider/dist .
+
+
+# Build provider tarball
+# The -C flag rewrites the base path from packages/app/dist/ to ./
+tar \
+  --no-xattrs \
+  -czf ./examples/medplum-chart-demo/medplum-chart.tar.gz \
+  -C examples/medplum-chart-demo/dist .
+
 # Supply chain attestations
 # See: https://docs.docker.com/scout/policy/#supply-chain-attestations
 ATTESTATIONS="--provenance=true --sbom=true"
@@ -96,4 +111,23 @@ if [[ "$IS_RELEASE" == "true" ]]; then
 fi
 pushd examples/foomedical
 docker buildx build $ATTESTATIONS $PLATFORMS $FOOMEDICAL_TAGS --push .
+popd
+
+
+# Build and push provider Docker images
+PROVIDER_TAGS="--tag $PROVIDER_DOCKERHUB_REPOSITORY:latest --tag $PROVIDER_DOCKERHUB_REPOSITORY:$GITHUB_SHA"
+if [[ "$IS_RELEASE" == "true" ]]; then
+  PROVIDER_TAGS="$PROVIDER_TAGS --tag $PROVIDER_DOCKERHUB_REPOSITORY:$FULL_VERSION --tag $PROVIDER_DOCKERHUB_REPOSITORY:$MAJOR_DOT_MINOR"
+fi
+pushd examples/medplum-provider
+docker buildx build $ATTESTATIONS $PLATFORMS $PROVIDER_TAGS --push .
+popd
+
+# Build and push chart Docker images
+CHART_TAGS="--tag $CHART_DOCKERHUB_REPOSITORY:latest --tag $CHART_DOCKERHUB_REPOSITORY:$GITHUB_SHA"
+if [[ "$IS_RELEASE" == "true" ]]; then
+  CHART_TAGS="$PROVIDER_TAGS --tag $CHART_DOCKERHUB_REPOSITORY:$FULL_VERSION --tag $CHART_DOCKERHUB_REPOSITORY:$MAJOR_DOT_MINOR"
+fi
+pushd examples/medplum-chart-demo
+docker buildx build $ATTESTATIONS $PLATFORMS $CHART_TAGS --push .
 popd
