@@ -70,7 +70,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GY_TEMP_TOKEN }}
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v2
