@@ -77,7 +77,7 @@ jobs:
 
       - name: Build and push Docker images
         #run: ./scripts/build-revia-docker.sh --release
-        run: ./scripts/build-revia-docker.sh
+        run: ./scripts/build-revia-auth-check.sh
         env:
           SERVER_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/heyrevia/medplum-server
           APP_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/heyrevia/medplum-app

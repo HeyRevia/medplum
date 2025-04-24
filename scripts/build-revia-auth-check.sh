@@ -18,6 +18,8 @@ set -x
 
 cat ~/.docker/config.json
 
+docker info
+
 # Build foomedical tarball
 # The -C flag rewrites the base path from packages/app/dist/ to ./
 # tar \
