@@ -28,7 +28,7 @@ server {
 EOF
 
 # Copy and extract the app tarball
-# ADD ./medplum-foomedical.tar.gz /usr/share/nginx/html
+ADD ./medplum-foomedical.tar.gz /usr/share/nginx/html
 
 # Copy the entrypoint script
 COPY ./docker-entrypoint.sh /docker-entrypoint.sh
