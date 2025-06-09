@@ -81,9 +81,9 @@ const config: Config = {
 
   themeConfig: {
     navbar: {
-      title: 'Medplum',
+      title: 'HeyRevia',
       logo: {
-        alt: 'Medplum Logo',
+        alt: 'HeyRevia Logo',
         src: 'img/heyrevia-logo.png',
         width: 24,
         height: 32,
@@ -125,7 +125,7 @@ const config: Config = {
     footer: {
       links: [
         {
-          title: 'Medplum',
+          title: 'HeyRevia',
           items: [
             {
               html: `
