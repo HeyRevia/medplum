@@ -158,7 +158,7 @@ export function App(): JSX.Element {
   ) : (
     <SignInForm googleClientId={import.meta.env.GOOGLE_CLIENT_ID} onSuccess={() => undefined}>
       <Logo size={32} />
-      <Title>Sign in to Medplum</Title>
+      <Title>Sign in to HeyRevia</Title>
     </SignInForm>
   );
 }

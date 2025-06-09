@@ -79,7 +79,7 @@ export function OAuthPage(): JSX.Element | null {
           ) : (
             <Logo size={32} />
           )}
-          <Title>{clientInfo?.welcomeString ?? 'Sign in to Medplum'}</Title>
+          <Title>{clientInfo?.welcomeString ?? 'Sign in to HeyRevia'}</Title>
         </>
       )}
     </SignInForm>
