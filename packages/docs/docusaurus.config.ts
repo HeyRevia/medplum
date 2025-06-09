@@ -59,15 +59,15 @@ const config: Config = {
       attributes: {
         rel: 'apple-touch-icon',
         sizes: '180x180',
-        href: '/img/logo-192x192.png',
+        href: '/img/heyrevia-logo-192x192.png',
       },
     },
     {
       tagName: 'link',
       attributes: {
         rel: 'icon',
-        href: '/img/logo.svg',
-        type: 'image/svg+xml',
+        sizes: '180x180',
+        href: '/img/heyrevia-logo-192x192.png',
       },
     },
     {
@@ -84,7 +84,7 @@ const config: Config = {
       title: 'Medplum',
       logo: {
         alt: 'Medplum Logo',
-        src: 'img/logo.svg',
+        src: 'img/heyrevia-logo.png',
         width: 24,
         height: 32,
       },
