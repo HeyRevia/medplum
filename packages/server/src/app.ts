@@ -49,6 +49,8 @@ import { webhookRouter } from './webhook/routes';
 import { closeWebSockets, initWebSockets } from './websockets';
 import { wellKnownRouter } from './wellknown';
 import { closeWorkers, initWorkers } from './workers';
+import { initPostDeployMigrationQueue } from './workers/post-deploy-migration';
+import { queueRegistry } from './workers/utils';
 
 let server: http.Server | undefined = undefined;
 
@@ -226,6 +228,8 @@ export function initAppServices(config: MedplumServerConfig): Promise<void> {
     await initKeys(config);
     initBinaryStorage(config.binaryStorage);
     initWorkers(config);
+    const { name, queue } = initPostDeployMigrationQueue(config);
+    queueRegistry.addQueue(name, queue);
     initHeartbeat(config);
     initOtelHeartbeat();
     initServerRegistryHeartbeatListener();

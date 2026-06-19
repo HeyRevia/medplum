@@ -3,7 +3,7 @@
 import { getReferenceString } from '@medplum/core';
 import { AsyncJob, Parameters } from '@medplum/fhirtypes';
 import { DelayedError, Job, Queue } from 'bullmq';
-import { closeWorkers, initWorkers } from '.';
+import { closeWorkers } from '.';
 import { initAppServices, shutdownApp } from '../app';
 import { loadTestConfig } from '../config/loader';
 import { MedplumServerConfig } from '../config/types';
@@ -23,6 +23,7 @@ import * as versionModule from '../util/version';
 import { getServerVersion } from '../util/version';
 import {
   addPostDeployMigrationJobData,
+  initPostDeployMigrationWorker,
   jobProcessor,
   PostDeployMigrationQueueName,
   prepareCustomMigrationJobData,
@@ -72,11 +73,16 @@ describe('Post-Deploy Migration Worker', () => {
     await shutdownApp();
   });
 
+  function initPostDeployMigrationWorkerForTest(): void {
+    const { name, queue, worker } = initPostDeployMigrationWorker(config);
+    queueRegistry.add(name, queue, worker);
+  }
+
   test('Initialize and close worker', async () => {
     let queue = queueRegistry.get(PostDeployMigrationQueueName);
     expect(queue).toBeUndefined();
 
-    await initWorkers(config);
+    initPostDeployMigrationWorkerForTest();
 
     queue = queueRegistry.get(PostDeployMigrationQueueName);
     expect(queue).toBeDefined();
@@ -92,7 +98,7 @@ describe('Post-Deploy Migration Worker', () => {
   }
 
   test('prepareCustomMigrationJobData and addPostDeployMigrationJobData', async () => {
-    await initWorkers(config);
+    initPostDeployMigrationWorkerForTest();
 
     const queue = getQueueFromRegistryOrThrow();
     const addSpy = jest.mocked(queue.add).mockImplementation(async (jobName, jobData, options) => {
@@ -276,7 +282,7 @@ describe('Post-Deploy Migration Worker', () => {
   test.each(['some-token', undefined])(
     'Job processor re-queues ineligible jobs with job.token %s',
     async (jobToken) => {
-      await initWorkers(config);
+      initPostDeployMigrationWorkerForTest();
 
       const queue = getQueueFromRegistryOrThrow();
 
@@ -346,7 +352,7 @@ describe('Post-Deploy Migration Worker', () => {
   );
 
   test('Job processor delays job when migration definition is not found', async () => {
-    await initWorkers(config);
+    initPostDeployMigrationWorkerForTest();
 
     const mockAsyncJob = await getSystemRepo().createResource<AsyncJob>({
       resourceType: 'AsyncJob',
@@ -394,7 +400,7 @@ describe('Post-Deploy Migration Worker', () => {
     const mockServerVersion = '4.3.0';
     const oldServerVersion = '4.2.2';
     jest.spyOn(versionModule, 'getServerVersion').mockImplementation(() => mockServerVersion);
-    await initWorkers(config);
+    initPostDeployMigrationWorkerForTest();
 
     const mockAsyncJob = await getSystemRepo().createResource<AsyncJob>({
       resourceType: 'AsyncJob',

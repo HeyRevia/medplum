@@ -216,6 +216,23 @@ describe('worker utils', () => {
       expect(queueRegistry.get(queueName)).toBe(queue);
       expect(queueRegistry.isClosing(queueName)).toBe(false);
     });
+
+    test('queue without worker', async () => {
+      const queueRegistry = new DefaultQueueRegistry();
+
+      queueRegistry.addQueue(queueName, queue);
+      expect(queueRegistry.get(queueName)).toBe(queue);
+      expect(queueRegistry.isClosing(queueName)).toBe(false);
+      expect(() => queueRegistry.addQueue(queueName, queue)).toThrow(`Queue ${queueName} already registered`);
+
+      const promises = queueRegistry.closeAll();
+      expect(promises.length).toBe(1);
+      await Promise.all(promises);
+
+      expect(queue.close).toHaveBeenCalledTimes(1);
+      expect(worker.close).not.toHaveBeenCalled();
+      expect(queueRegistry.get(queueName)).toBeUndefined();
+    });
   });
 
   describe('addVerboseQueueLogging', () => {

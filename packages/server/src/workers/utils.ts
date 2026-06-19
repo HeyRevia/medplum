@@ -199,6 +199,7 @@ export type WorkerInitializer = (config: MedplumServerConfig) => { queue: Queue;
 
 export interface QueueRegistry {
   add(name: string, queue: Queue, worker: Worker): void;
+  addQueue(name: string, queue: Queue): void;
   get<T>(name: string): Queue<T> | undefined;
   isClosing(name: string): boolean | undefined;
   closeAll(): Promise<void>[];
@@ -215,17 +216,26 @@ export class DefaultQueueRegistry implements QueueRegistry {
   }
 
   add(name: string, queue: Queue, worker: Worker): void {
-    if (this.queueMap[name]) {
-      throw new Error(`Queue ${name} already registered`);
-    }
+    this.addQueue(name, queue);
 
-    this.queueMap[name] = { queue, worker, isClosing: false };
+    const entry = this.queueMap[name];
+    if (entry) {
+      entry.worker = worker;
+    }
 
     worker.on('closing', () => {
       if (this.queueMap[name]) {
         this.queueMap[name].isClosing = true;
       }
     });
+  }
+
+  addQueue(name: string, queue: Queue): void {
+    if (this.queueMap[name]) {
+      throw new Error(`Queue ${name} already registered`);
+    }
+
+    this.queueMap[name] = { queue, worker: undefined, isClosing: false };
   }
 
   get<T>(name: string): Queue<T> | undefined {

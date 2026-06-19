@@ -12,6 +12,7 @@ import { AsyncJob, Parameters, ParametersParameter } from '@medplum/fhirtypes';
 import { Job, JobsOptions, Queue, QueueBaseOptions, Worker } from 'bullmq';
 import { PoolClient } from 'pg';
 import * as semver from 'semver';
+import { MedplumServerConfig } from '../config/types';
 import { getRequestContext, tryRunInRequestContext } from '../context';
 import { AsyncJobExecutor } from '../fhir/operations/utils/asyncjobexecutor';
 import { getSystemRepo, Repository } from '../fhir/repo';
@@ -44,6 +45,12 @@ import {
 
 export const PostDeployMigrationQueueName = 'PostDeployMigrationQueue';
 
+function getDefaultOptions(config: MedplumServerConfig): QueueBaseOptions {
+  return {
+    connection: config.redis,
+  };
+}
+
 function getJobDataLoggingFields(job: Job<PostDeployJobData>): Record<string, string> {
   return {
     asyncJob: 'AsyncJob/' + job.data.asyncJobId,
@@ -51,11 +58,11 @@ function getJobDataLoggingFields(job: Job<PostDeployJobData>): Record<string, st
   };
 }
 
-export const initPostDeployMigrationWorker: WorkerInitializer = (config) => {
-  const defaultOptions: QueueBaseOptions = {
-    connection: config.redis,
-  };
-
+export function initPostDeployMigrationQueue(config: MedplumServerConfig): {
+  queue: Queue<PostDeployJobData>;
+  name: string;
+} {
+  const defaultOptions = getDefaultOptions(config);
   const queue = new Queue<PostDeployJobData>(PostDeployMigrationQueueName, {
     ...defaultOptions,
     defaultJobOptions: {
@@ -63,6 +70,12 @@ export const initPostDeployMigrationWorker: WorkerInitializer = (config) => {
     },
   });
 
+  return { queue, name: PostDeployMigrationQueueName };
+}
+
+export const initPostDeployMigrationWorker: WorkerInitializer = (config) => {
+  const defaultOptions = getDefaultOptions(config);
+  const { queue, name } = initPostDeployMigrationQueue(config);
   const worker = new Worker<PostDeployJobData>(
     PostDeployMigrationQueueName,
     async (job) => tryRunInRequestContext(job.data.requestId, job.data.traceId, async () => jobProcessor(job)),
@@ -72,7 +85,7 @@ export const initPostDeployMigrationWorker: WorkerInitializer = (config) => {
     }
   );
   addVerboseQueueLogging<PostDeployJobData>(queue, worker, getJobDataLoggingFields);
-  return { queue, worker, name: PostDeployMigrationQueueName };
+  return { queue, worker, name };
 };
 
 export async function isClusterCompatible(migrationNumber: number): Promise<boolean> {
