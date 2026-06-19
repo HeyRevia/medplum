@@ -1,0 +1,91 @@
+name: Revia Publish
+# Based on: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
+on:
+  push:
+    tags:
+      - 'rv*'
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build_and_check:
+    name: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NODE_VERSION: '20'
+      # SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      # SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      # - name: Slack start message
+      #   uses: slackapi/slack-github-action@v1.24.0
+      #   with:
+      #     payload: |
+      #       {"text": "Starting publish: ${{ github.ref_name }}"}
+
+      - name: Install dependencies
+        run: npm ci --maxsockets 1
+
+      - name: Build
+        run: npm run build:all
+        env:
+          MEDPLUM_BASE_URL: '__MEDPLUM_BASE_URL__'
+          MEDPLUM_CLIENT_ID: '__MEDPLUM_CLIENT_ID__'
+          MEDPLUM_REGISTER_ENABLED: '__MEDPLUM_REGISTER_ENABLED__'
+          MEDPLUM_AWS_TEXTRACT_ENABLED: '__MEDPLUM_AWS_TEXTRACT_ENABLED__'
+          GOOGLE_CLIENT_ID: '__GOOGLE_CLIENT_ID__'
+          RECAPTCHA_SITE_KEY: '__RECAPTCHA_SITE_KEY__'
+
+      # - name: Sync example repos
+      #   run: ./scripts/update-example-changes.sh "${{ secrets.SYNC_REPO_TOKEN }}"
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GY_TEMP_TOKEN }}
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and push Docker images
+        #run: ./scripts/build-revia-docker.sh --release
+        run: ./scripts/build-revia-docker.sh
+        env:
+          SERVER_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/heyrevia/medplum-server
+          APP_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/heyrevia/medplum-app
+          FOOMEDICAL_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/heyrevia/medplum-foomedical
+          PROVIDER_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/heyrevia/medplum-provider
+          CHART_DOCKERHUB_REPOSITORY: ${{env.REGISTRY}}/heyrevia/medplum-chart
+
+      # - name: Deploy bot layer
+      #   run: ./scripts/deploy-bot-layer.sh
+
+  
