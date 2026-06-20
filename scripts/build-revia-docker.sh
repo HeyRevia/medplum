@@ -36,12 +36,12 @@ tar \
   packages/server/dist \
   packages/server/static
 
-# # Build app tarball
-# # The -C flag rewrites the base path from packages/app/dist/ to ./
-# tar \
-#   --no-xattrs \
-#   -czf ./packages/app/medplum-app.tar.gz \
-#   -C packages/app/dist .
+# Build app tarball
+# The -C flag rewrites the base path from packages/app/dist/ to ./
+tar \
+  --no-xattrs \
+  -czf ./packages/app/medplum-app.tar.gz \
+  -C packages/app/dist .
 
 # # Build foomedical tarball
 # # The -C flag rewrites the base path from packages/app/dist/ to ./
