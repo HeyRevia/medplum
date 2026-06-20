@@ -4,10 +4,11 @@ import type { WithId } from '@medplum/core';
 import { capitalize, getReferenceString, normalizeErrorString, PropertyType, toTypedValue } from '@medplum/core';
 import type { AsyncJob, Parameters, ParametersParameter } from '@medplum/fhirtypes';
 import type { Job, JobsOptions, QueueBaseOptions } from 'bullmq';
-import { Queue, Worker } from 'bullmq';
+import { Queue } from 'bullmq';
 import type { PoolClient } from 'pg';
 import * as semver from 'semver';
-import { tryGetRequestContext, tryRunInRequestContext } from '../context';
+import type { MedplumServerConfig } from '../config/types';
+import { tryGetRequestContext } from '../context';
 import { AsyncJobExecutor } from '../fhir/operations/utils/asyncjobexecutor';
 import type { SystemRepository } from '../fhir/repo';
 import { getShardSystemRepo } from '../fhir/repo';
@@ -32,7 +33,7 @@ import type { MigrationActionResult, PhasalMigration } from '../migrations/types
 import { reconnectOnError } from '../redis';
 import { getRegisteredServers } from '../server-registry';
 import type { WorkerInitializer } from './utils';
-import { addVerboseQueueLogging, isJobActive, isJobCompatible, moveToDelayedAndThrow, queueRegistry } from './utils';
+import { isJobActive, isJobCompatible, moveToDelayedAndThrow, queueRegistry } from './utils';
 
 export const PostDeployMigrationQueueName = 'PostDeployMigrationQueue';
 
@@ -43,10 +44,14 @@ function getJobDataLoggingFields(job: Job<PostDeployJobData>): Record<string, st
   };
 }
 
-export const initPostDeployMigrationWorker: WorkerInitializer = (config) => {
-  const defaultOptions: QueueBaseOptions = {
+function getPostDeployMigrationQueueOptions(config: MedplumServerConfig): QueueBaseOptions {
+  return {
     connection: { ...config.redis, reconnectOnError },
   };
+}
+
+export const initPostDeployMigrationQueue: WorkerInitializer = (config) => {
+  const defaultOptions = getPostDeployMigrationQueueOptions(config);
 
   const queue = new Queue<PostDeployJobData>(PostDeployMigrationQueueName, {
     ...defaultOptions,
@@ -55,16 +60,7 @@ export const initPostDeployMigrationWorker: WorkerInitializer = (config) => {
     },
   });
 
-  const worker = new Worker<PostDeployJobData>(
-    PostDeployMigrationQueueName,
-    async (job) => tryRunInRequestContext(job.data.requestId, job.data.traceId, async () => jobProcessor(job)),
-    {
-      ...config.bullmq,
-      ...defaultOptions,
-    }
-  );
-  addVerboseQueueLogging<PostDeployJobData>(queue, worker, getJobDataLoggingFields);
-  return { queue, worker, name: PostDeployMigrationQueueName };
+  return { queue, name: PostDeployMigrationQueueName };
 };
 
 export async function isClusterCompatible(migrationNumber: number): Promise<boolean> {

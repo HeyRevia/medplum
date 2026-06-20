@@ -110,10 +110,10 @@ export async function updateAsyncJobOutput(
   );
 }
 
-export type WorkerInitializer = (config: MedplumServerConfig) => { queue: Queue; worker: Worker; name: string };
+export type WorkerInitializer = (config: MedplumServerConfig) => { queue: Queue; worker?: Worker; name: string };
 
 export interface QueueRegistry {
-  add(name: string, queue: Queue, worker: Worker): void;
+  add(name: string, queue: Queue, worker?: Worker): void;
   get<T>(name: string): Queue<T> | undefined;
   isClosing(name: string): boolean | undefined;
   closeAll(): Promise<void>[];
@@ -129,14 +129,14 @@ export class DefaultQueueRegistry implements QueueRegistry {
     this.queueMap = Object.create(null);
   }
 
-  add(name: string, queue: Queue, worker: Worker): void {
+  add(name: string, queue: Queue, worker?: Worker): void {
     if (this.queueMap[name]) {
       throw new Error(`Queue ${name} already registered`);
     }
 
     this.queueMap[name] = { queue, worker, isClosing: false };
 
-    worker.on('closing', () => {
+    worker?.on('closing', () => {
       if (this.queueMap[name]) {
         this.queueMap[name].isClosing = true;
       }

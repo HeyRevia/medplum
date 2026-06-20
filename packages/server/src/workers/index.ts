@@ -7,7 +7,7 @@ import { getLogger, globalLogger } from '../logger';
 import { initBatchWorker } from './batch';
 import { addCronJobs, initCronWorker } from './cron';
 import { addDownloadJobs, initDownloadWorker } from './download';
-import { initPostDeployMigrationWorker } from './post-deploy-migration';
+import { initPostDeployMigrationQueue } from './post-deploy-migration';
 import { initReindexWorker } from './reindex';
 import { initSetAccountsWorker } from './set-accounts';
 import { addSubscriptionJobs, initSubscriptionWorker } from './subscription';
@@ -26,8 +26,8 @@ export function initWorkers(config: MedplumServerConfig): void {
     initCronWorker,
     initReindexWorker,
     initBatchWorker,
-    initPostDeployMigrationWorker,
     initSetAccountsWorker,
+    initPostDeployMigrationQueue,
   ];
 
   for (const initializer of initializers) {
