@@ -1,6 +1,9 @@
-FROM nginxinc/nginx-unprivileged:alpine
+# Chainguard hardened nginx from the entitled OpenLoop catalog.
+# The -dev variant ships a shell so docker-entrypoint.sh can do its runtime
+# env substitution (sh + sed + find). Chainguard nginx runs as nonroot uid 65532.
+FROM cgr.dev/openloophealth.com/nginx:latest-dev
 
-# Start off as user root so we have permissions to run APK and chown
+# Start off as user root so we have permissions to chown
 USER root
 
 # Copy nginx configuration
@@ -33,14 +36,14 @@ ADD ./medplum-app.tar.gz /usr/share/nginx/html
 # Copy the entrypoint script
 COPY ./docker-entrypoint.sh /docker-entrypoint.sh
 
-# Grant ownership of the html dir and the entrypoint to the nginx default user/group
-RUN chown -R 101:101 /usr/share/nginx/html && \
-    chown 101:101 /docker-entrypoint.sh && \
+# Grant ownership of the html dir and the entrypoint to the nginx nonroot user (uid 65532)
+RUN chown -R 65532:65532 /usr/share/nginx/html && \
+    chown 65532:65532 /docker-entrypoint.sh && \
     chmod +x  /docker-entrypoint.sh
 
 EXPOSE 3000
 
-# Switch back to the 101 UID (non-root user)
-USER 101
+# Switch back to the 65532 UID (non-root user)
+USER 65532
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

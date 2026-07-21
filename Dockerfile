@@ -8,9 +8,10 @@
 # We do this to preserve the folder structure in a single layer.
 # See: https://docs.docker.com/reference/dockerfile/#adding-local-tar-archives
 
-# Uses Docker "Hardened Images":
-# https://hub.docker.com/hardened-images/catalog/dhi/node/guides
-# It does not include any development dependencies.
+# Uses Chainguard hardened images from the entitled OpenLoop catalog
+# (cgr.dev/openloophealth.com). The build stage uses the -dev variant (ships a
+# shell + npm); the runtime stage uses the distroless variant (bare `node`
+# entrypoint, no shell). Neither includes development dependencies.
 
 # Builds multiarch docker images
 # https://docs.docker.com/build/building/multi-platform/
@@ -21,7 +22,7 @@
 # https://github.com/docker-library/official-images#architectures-other-than-amd64
 
 # Stage 1: Build the application and install production dependencies
-FROM dhi.io/node:24-dev AS build-stage
+FROM cgr.dev/openloophealth.com/node:24-dev AS build-stage
 ENV NODE_ENV=production
 WORKDIR /usr/src/medplum
 ADD ./medplum-server-metadata.tar.gz ./
@@ -29,7 +30,7 @@ RUN npm ci --omit=dev && \
   rm package-lock.json
 
 # Stage 2: Create the runtime image
-FROM dhi.io/node:24 AS runtime-stage
+FROM cgr.dev/openloophealth.com/node:24 AS runtime-stage
 ENV NODE_ENV=production
 WORKDIR /usr/src/medplum
 COPY --from=build-stage /usr/src/medplum/ ./
